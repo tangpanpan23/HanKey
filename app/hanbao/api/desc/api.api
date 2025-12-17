@@ -1,0 +1,188 @@
+// 汉字寻宝引擎API
+// 提供15分钟解谜游戏的核心功能
+
+// 词根解锁仪式
+type (
+	UnlockRequest {
+		Words []string `json:"words"` // 用户输入的词语，如 ["电话", "发现", "图书馆"]
+	}
+
+	UnlockResult {
+		InputWords     []string `json:"input_words"`
+		DetectedRoots  []CharacterRoot `json:"detected_roots"`
+		RootCount      int `json:"root_count"`
+		UnlockableWords int `json:"unlockable_words"`
+		WordBreakdown  map[string]int `json:"word_breakdown"`
+		Insights       []string `json:"insights"`
+	}
+
+	CharacterRoot {
+		ID          int64  `json:"id"`
+		Root        string `json:"root"`
+		Pinyin      string `json:"pinyin"`
+		Difficulty  int    `json:"difficulty"`
+		Tier        int    `json:"tier"`
+		Description string `json:"description"`
+	}
+)
+
+// 用户会话管理
+type (
+	StartSessionRequest {
+		UserID string `json:"user_id,omitempty"` // 可选，用户标识
+	}
+
+	StartSessionResponse {
+		SessionID     string `json:"session_id"`
+		StartTime     string `json:"start_time"`
+		Status        string `json:"status"`
+		Message       string `json:"message"`
+	}
+)
+
+// 关卡系统
+type (
+	Level {
+		ID          string `json:"id"`
+		Type        string `json:"type"`
+		Title       string `json:"title"`
+		Description string `json:"description"`
+		RootID      int64  `json:"root_id"`
+		Difficulty  int    `json:"difficulty"`
+		TimeLimit   int    `json:"time_limit"`
+		Questions   []Question `json:"questions"`
+		Reward      Reward `json:"reward"`
+	}
+
+	Question {
+		ID          string   `json:"id"`
+		Type        string   `json:"type"`
+		Content     string   `json:"content"`
+		Options     []string `json:"options,omitempty"`
+		CorrectAnswer string `json:"correct_answer"`
+		Hint        string   `json:"hint,omitempty"`
+		Explanation string   `json:"explanation"`
+	}
+
+	Reward {
+		Roots   []int64 `json:"roots"`
+		Score   int     `json:"score"`
+		Achievement string `json:"achievement,omitempty"`
+	}
+
+	AnswerRequest {
+		QuestionID string `json:"question_id"`
+		Answer     string `json:"answer"`
+	}
+
+	AnswerResult {
+		Correct     bool   `json:"correct"`
+		Score       int    `json:"score"`
+		Explanation string `json:"explanation"`
+		NextHint    string `json:"next_hint,omitempty"`
+	}
+)
+
+// 藏宝图
+type (
+	TreasureMap {
+		UserID       string `json:"user_id"`
+		SessionID    string `json:"session_id"`
+		Roots        []CharacterRoot `json:"roots"`
+		Vocabularies map[string][]Vocabulary `json:"vocabularies"`
+		Connections  []Connection `json:"connections"`
+		Achievements []Achievement `json:"achievements"`
+		Stats        SessionStats `json:"stats"`
+	}
+
+	Vocabulary {
+		ID             int64  `json:"id"`
+		RootID         int64  `json:"root_id"`
+		Language       string `json:"language"`
+		Word           string `json:"word"`
+		Romaji         string `json:"romaji,omitempty"`
+		Pronunciation  string `json:"pronunciation"`
+		Meaning        string `json:"meaning"`
+		ReadType       string `json:"read_type,omitempty"`
+		Difficulty     int    `json:"difficulty"`
+		ExampleCount   int    `json:"example_count"`
+	}
+
+	Connection {
+		FromRootID int64  `json:"from_root_id"`
+		ToRootID   int64  `json:"to_root_id"`
+		Type       string `json:"type"`
+		Description string `json:"description"`
+	}
+
+	Achievement {
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		Icon        string `json:"icon"`
+		Condition   string `json:"condition"`
+		Reward      string `json:"reward"`
+	}
+
+	SessionStats {
+		TotalRoots     int     `json:"total_roots"`
+		UnlockedRoots  int     `json:"unlocked_roots"`
+		TotalWords     int     `json:"total_words"`
+		LearnedWords   int     `json:"learned_words"`
+		Accuracy       float64 `json:"accuracy"`
+		AverageTime    int     `json:"average_time"`
+		CompletionRate float64 `json:"completion_rate"`
+	}
+)
+
+// 推荐系统
+type (
+	RecommendationsResponse {
+		RecommendedRoots []CharacterRoot `json:"recommended_roots"`
+		Reason          string `json:"reason"`
+		NextGoals       []string `json:"next_goals"`
+	}
+)
+
+// API路由定义
+service hanbao-api {
+	// 词根解锁仪式
+	@handler HanbaoUnlock
+	post /api/v1/hanbao/unlock (UnlockRequest) returns (UnlockResult)
+
+	// 用户会话管理
+	@handler HanbaoStartSession
+	post /api/v1/hanbao/session/start (StartSessionRequest) returns (StartSessionResponse)
+
+	// 关卡系统
+	@handler HanbaoGetLevel
+	get /api/v1/hanbao/level/:levelId returns (Level)
+
+	@handler HanbaoAnswerLevel
+	post /api/v1/hanbao/level/:levelId/answer (AnswerRequest) returns (AnswerResult)
+
+	// 藏宝图
+	@handler HanbaoGetTreasureMap
+	get /api/v1/hanbao/session/:sessionId/treasure-map returns (TreasureMap)
+
+	// 推荐系统
+	@handler HanbaoGetRecommendations
+	get /api/v1/hanbao/recommendations/:sessionId returns (RecommendationsResponse)
+}
+
+// 中间件配置
+middleware (
+	// CORS支持
+	cors: {
+		allowOrigin: "*",
+		allowMethods: "GET,POST,PUT,DELETE,OPTIONS",
+		allowHeaders: "Content-Type,Authorization,X-Requested-With",
+		exposeHeaders: "Content-Length,Content-Range"
+	}
+
+	// 请求日志
+	logger: {}
+
+	// 恢复中间件
+	recover: {}
+)

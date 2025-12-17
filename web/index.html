@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 汉字寻宝引擎 · 15分钟解谜演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .result {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .insight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .treasure-map {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 汉字寻宝引擎</h1>
+            <p>15分钟内，听懂20+日韩语词汇的AI解谜游戏</p>
+        </div>
+
+        <!-- 词根解锁仪式 -->
+        <div class="card">
+            <h2>🎯 第一阶段：词根解锁仪式</h2>
+            <p style="margin-bottom: 20px; color: #666;">输入任意3个中文词语，开启你的汉字寻宝之旅！</p>
+
+            <div class="input-group">
+                <label for="words">输入中文词语（用逗号分隔）:</label>
+                <input type="text" id="words" class="input-field"
+                       placeholder="例如：电话，发现，图书馆"
+                       value="电话,发现,图书馆">
+            </div>
+
+            <button class="btn" onclick="unlockRoots()">🔍 开始词根解锁仪式</button>
+
+            <div id="unlock-result" class="result" style="display: none;">
+                <h3>✨ 解锁结果</h3>
+                <div id="insights"></div>
+            </div>
+        </div>
+
+        <!-- 解谜关卡 -->
+        <div class="card">
+            <h2>🧩 第二阶段：智能解谜关卡</h2>
+            <p style="margin-bottom: 20px; color: #666;">通过解谜来解锁更多日韩语词汇！</p>
+
+            <button class="btn" onclick="startLevel('pronunciation')">🎵 音读破译室</button>
+            <button class="btn" onclick="startLevel('listening')" style="margin-top: 10px;">🎧 韩语听力侦探</button>
+            <button class="btn" onclick="startLevel('dialect')" style="margin-top: 10px;">🗺️ 方言连接彩蛋</button>
+
+            <div id="level-content" style="display: none;">
+                <div id="level-result" class="result">
+                    <h3>🎯 关卡挑战</h3>
+                    <div id="level-question"></div>
+                    <div id="level-options" style="margin-top: 15px;"></div>
+                    <button class="btn" onclick="submitAnswer()" style="margin-top: 15px;">提交答案</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 藏宝图 -->
+        <div class="card">
+            <h2>🏆 第三阶段：我的词根藏宝图</h2>
+            <p style="margin-bottom: 20px; color: #666;">查看你的解谜成果和学习进度！</p>
+
+            <button class="btn" onclick="showTreasureMap()">📊 生成藏宝图</button>
+
+            <div id="treasure-map" style="display: none;">
+                <div id="stats" class="stats"></div>
+                <div id="map-content" class="treasure-map"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+
+        // 词根解锁仪式
+        async function unlockRoots() {
+            const wordsInput = document.getElementById('words').value;
+            const words = wordsInput.split(',').map(w => w.trim()).filter(w => w);
+
+            if (words.length < 1) {
+                alert('请至少输入一个词语');
+                return;
+            }
+
+            showLoading('unlock-result', true);
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/hanbao/unlock`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ words: words }),
+                });
+
+                const result = await response.json();
+
+                displayUnlockResult(result);
+            } catch (error) {
+                console.error('解锁失败:', error);
+                alert('解锁失败，请检查网络连接');
+            }
+
+            showLoading('unlock-result', false);
+        }
+
+        function displayUnlockResult(result) {
+            const container = document.getElementById('insights');
+            container.innerHTML = '';
+
+            result.insights.forEach(insight => {
+                const div = document.createElement('div');
+                div.className = 'insight';
+                div.textContent = insight;
+                container.appendChild(div);
+            });
+
+            document.getElementById('unlock-result').style.display = 'block';
+        }
+
+        // 关卡系统
+        async function startLevel(levelType) {
+            const levelId = `${levelType}_1_1`; // 示例关卡ID
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/hanbao/level/${levelId}`);
+                const level = await response.json();
+
+                displayLevel(level);
+            } catch (error) {
+                console.error('获取关卡失败:', error);
+                alert('获取关卡失败');
+            }
+        }
+
+        function displayLevel(level) {
+            const questionDiv = document.getElementById('level-question');
+            const optionsDiv = document.getElementById('level-options');
+
+            if (level.questions && level.questions.length > 0) {
+                const question = level.questions[0];
+                questionDiv.innerHTML = `<h4>${level.title}</h4><p>${question.content}</p>`;
+
+                if (question.options && question.options.length > 0) {
+                    optionsDiv.innerHTML = question.options.map((option, index) =>
+                        `<label style="display: block; margin: 5px 0;">
+                            <input type="radio" name="answer" value="${option}" style="margin-right: 10px;">
+                            ${option}
+                        </label>`
+                    ).join('');
+                }
+            }
+
+            document.getElementById('level-content').style.display = 'block';
+        }
+
+        async function submitAnswer() {
+            const selectedOption = document.querySelector('input[name="answer"]:checked');
+            if (!selectedOption) {
+                alert('请选择一个答案');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/hanbao/level/example/answer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question_id: 'q1',
+                        answer: selectedOption.value
+                    }),
+                });
+
+                const result = await response.json();
+
+                alert(result.correct ? `正确！${result.explanation}` : `错误！${result.explanation}`);
+            } catch (error) {
+                console.error('提交答案失败:', error);
+                alert('提交答案失败');
+            }
+        }
+
+        // 藏宝图
+        async function showTreasureMap() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/hanbao/session/demo-session/treasure-map`);
+                const treasureMap = await response.json();
+
+                displayTreasureMap(treasureMap);
+            } catch (error) {
+                console.error('获取藏宝图失败:', error);
+                alert('获取藏宝图失败');
+            }
+        }
+
+        function displayTreasureMap(treasureMap) {
+            // 显示统计数据
+            const statsDiv = document.getElementById('stats');
+            statsDiv.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${treasureMap.stats.unlocked_roots}</div>
+                    <div class="stat-label">已解锁字根</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${treasureMap.stats.total_words}</div>
+                    <div class="stat-label">掌握词汇</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${treasureMap.stats.accuracy}%</div>
+                    <div class="stat-label">准确率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${treasureMap.achievements.length}</div>
+                    <div class="stat-label">获得成就</div>
+                </div>
+            `;
+
+            // 生成文字报告
+            const report = generateTextReport(treasureMap);
+            document.getElementById('map-content').textContent = report;
+
+            document.getElementById('treasure-map').style.display = 'block';
+        }
+
+        function generateTextReport(treasureMap) {
+            let report = `🎯 15分钟战报\n\n`;
+            report += `✅ 已解锁字根：${treasureMap.stats.unlocked_roots}个\n`;
+            report += `✅ 已掌握词汇：日语${treasureMap.stats.total_words}个\n`;
+            report += `✅ 解密准确率：${treasureMap.stats.accuracy}%\n`;
+            report += `🔥 解锁成就：${treasureMap.achievements.length}个\n\n`;
+
+            report += `📊 词根网络预览：\n\n`;
+
+            // 显示字根和词汇
+            Object.keys(treasureMap.vocabularies).forEach(root => {
+                report += `【${root}】─┬─ `;
+                const vocabs = treasureMap.vocabularies[root];
+                if (vocabs && vocabs.length > 0) {
+                    vocabs.slice(0, 2).forEach((vocab, index) => {
+                        const display = vocab.language === 'ja' ?
+                            `${vocab.word}（${vocab.romaji}）` :
+                            `${vocab.word}（${vocab.pronunciation}）`;
+                        report += display;
+                        if (index < vocabs.slice(0, 2).length - 1) {
+                            report += '\n      ├─ ';
+                        }
+                    });
+                }
+                report += '\n\n';
+            });
+
+            if (treasureMap.achievements && treasureMap.achievements.length > 0) {
+                report += `🏆 获得成就：\n`;
+                treasureMap.achievements.forEach(achievement => {
+                    report += `• ${achievement.name} - ${achievement.description}\n`;
+                });
+            }
+
+            report += `\n🚀 下一站建议：\n继续解谜，点亮整张汉字网络！`;
+
+            return report;
+        }
+
+        function showLoading(elementId, show) {
+            const element = document.getElementById(elementId);
+            if (show) {
+                element.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>AI正在分析中...</p>
+                    </div>
+                `;
+                element.style.display = 'block';
+            }
+        }
+
+        // 页面加载完成提示
+        window.onload = function() {
+            console.log('🚀 汉字寻宝引擎演示页面已加载');
+            console.log('📍 API服务地址: http://localhost:8080');
+        };
+    </script>
+</body>
+</html>

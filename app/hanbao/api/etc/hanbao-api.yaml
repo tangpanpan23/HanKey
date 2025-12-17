@@ -1,0 +1,22 @@
+Name: hanbao-api
+Host: 0.0.0.0
+Port: 8080
+Mode: dev
+
+# 日志配置
+Log:
+  Level: info
+  Encoding: json
+  Writer: file
+  WriterFile: logs/hanbao-api.log
+
+# 缓存配置 (可选)
+Cache:
+  - Host: 127.0.0.1:6379
+
+# CORS配置
+Cors:
+  AllowOrigin: "*"
+  AllowMethods: "GET,POST,PUT,DELETE,OPTIONS"
+  AllowHeaders: "Content-Type,Authorization,X-Requested-With"
+  ExposeHeaders: "Content-Length,Content-Range"
